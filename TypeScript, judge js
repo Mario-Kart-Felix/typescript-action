@@ -1,0 +1,28 @@
+I'm new to TypeScript, React and English,sorry for ambiguity.I write a Function like this:
+
+interface ObjectAttrUniqueState {
+  editVisible: boolean;
+  currentId: number;
+  selectedUnique: number[];
+  name: string;
+  desc: string;
+}
+
+// some other code.....
+
+handleChangeForm(e: React.ChangeEvent<HTMLInputElement>, attr: 'desc' | 'name') {
+  this.setState({
+    [attr]: e.target.value,
+  });
+}
+TypeScript output that:
+
+Type '{ [x: string]: string; }' is missing the following properties from type 'Pick<ObjectAttrUniqueState, "editVisible" | "currentId" | "selectedUnique" | "name" | "desc">': editVisible, currentId, selectedUnique, name, desc
+I tried this works
+
+handleChangeForm(e: React.ChangeEvent<HTMLInputElement>, attr: 'name') {
+  this.setState({
+    [attr]: e.target.value,
+  });
+}
+I think that TypeScript judge 'name' to a simple string identifier, judge 'name'|'desc' to type string,that lead to this type error info. So how do I solve this problem?
