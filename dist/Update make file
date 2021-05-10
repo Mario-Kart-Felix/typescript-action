@@ -1,0 +1,216 @@
+Updates a master file by applying transactions
+Valid:	in a DATA step
+Category:	File-handling
+Type:	Executable
+
+Syntax
+Arguments
+Details
+Requirements
+Transaction Data Sets
+Missing Values
+Comparisons
+Examples
+Example 1: Basic Updating
+Example 2: Updating By Renaming Variables
+Example 3: Updating with Missing Values
+See Also
+Syntax
+UPDATEmaster-data-set<(data-set-options)> transaction-data-set<(data-set-options)>
+<END=variable>
+<UPDATEMODE=
+MISSINGCHECK|NOMISSINGCHECK>;
+BY by-variable;
+
+Arguments
+
+master-data-set
+names the SAS data set used as the master file.
+Range:	The name can be a one-level name (for example, FITNESS), a two-level name (for example, IN.FITNESS), or one of the special SAS data set names.
+See Also:	SAS Names and Words in SAS Language Reference: Concepts.
+(data-set-options)
+specifies actions SAS is to take when it reads variables into the DATA step for processing.
+Requirements:	Data-set-options must appear within parentheses and follow a SAS data set name.
+Tip:	Dropping, keeping, and renaming variables is often useful when you update a data set. Renaming like-named variables prevents the second value that is read from over-writing the first one. By renaming one variable, you make the values of both of them available for processing, such as comparing.
+Featured in:	Updating By Renaming Variables
+See Also:	A list of data set options to use with input data sets in Data Set Options by Category .
+transaction-data-set
+names the SAS data set that contains the changes to be applied to the master data set.
+Range:	The name can be a one-level name (for example, HEALTH), a two-level name (for example, IN.HEALTH), or one of the special SAS data set names.
+END=variable
+creates and names a temporary variable that contains an end-of-file indicator. This variable is initialized to 0 and is set to 1 when UPDATE processes the last observation. This variable is not added to any data set.
+UPDATEMODE=MISSINGCHECK
+UPDATEMODE=NOMISSINGCHECK
+specifies if missing variable values in a transaction data set are to be allowed to replace existing variable values in a master data set.
+MISSINGCHECK
+performs a check that prevents missing variable values in a transaction data set from replacing values in a master data set.
+NOMISSINGCHECK
+prevents a check and, therefore, allows missing variable values in a transaction data set to replace values in a master data set.
+Tip:	Special missing values, however, are the exception and will replace values in the master data set even when MISSINGCHECK (the default) is in effect.
+Default:	MISSINGCHECK
+Details
+
+
+Requirements
+The UPDATE statement must be accompanied by a BY statement that specifies the variables by which observations are matched.
+The BY statement should immediately follow the UPDATE statement to which it applies.
+The data sets listed in the UPDATE statement must be sorted by the values of the variables listed in the BY statement, or they must have an appropriate index.
+Each observation in the master data set should have a unique value of the BY variable or BY variables. If there are multiple values for the BY variable, only the first observation with that value is updated. The transaction data set can contain more than one observation with the same BY value. (Multiple transaction observations are all applied to the master observation before it is written to the output file.)
+
+Transaction Data Sets
+Usually, the master data set and the transaction data set contain the same variables. However, to reduce processing time, you can create a transaction data set that contains only those variables that are being updated. The transaction data set can also contain new variables to be added to the output data set.
+
+The output data set contains one observation for each observation in the master data set. If any transaction observations do not match master observations, they become new observations in the output data set. Observations that are not to be updated can be omitted from the transaction data set. See "Reading, Modifying, and Combining SAS Data Sets" in SAS Language Reference: Concepts.
+
+Missing Values
+By default the UPDATEMODE=MISSINGCHECK option is in effect, so missing values in the transaction data set do not replace existing values in the master data set. Therefore, if you want to update some but not all variables and if the variables you want to update differ from one observation to the next, set to missing those variables that are not changing. If you want missing values in the transaction data set to replace existing values in the master data set, use UPDATEMODE=NOMISSINGCHECK.
+
+Even when UPDATEMODE=MISSINGCHECK is in effect, you can replace existing values with missing values by using special missing value characters in the transaction data set. To create the transaction data set, use the MISSING statement in the DATA step. If you define one of the special missing values A through Z for the transaction data set, SAS updates numeric variables in the master data set to that value.
+
+If you want the resulting value in the master data set to be a regular missing value, use a single underscore (_) to represent missing values in the transaction data set. The resulting value in the master data set will be a period (.) for missing numeric values and a blank for missing character values.
+
+For more information about defining and using special missing value characters, see MISSING .
+
+Comparisons
+
+Both UPDATE and MERGE can update observations in a SAS data set.
+MERGE automatically replaces existing values in the first data set with missing values in the second data set. UPDATE, however, does not do so by default. To cause UPDATE to overwrite existing values in the master data set with missing ones in the transaction data set, you must use UPDATEMODE=NOMISSINGCHECK.
+UPDATE changes or updates the values of selected observations in a master file by applying transactions. UPDATE can also add new observations.
+Examples
+
+
+Example 1: Basic Updating
+These program statements create a new data set (OHIO.QTR1) by applying transactions to a master data set(OHIO.JAN). The BY variable STORE must appear in both OHIO.JAN and OHIO.WEEK4, and its values in the master data set should be unique:
+
+data ohio.qtr1;
+   update ohio.jan ohio.week4;
+   by store;
+run;
+
+Example 2: Updating By Renaming Variables
+This example shows renaming a variable in the FITNESS data set so that it will not overwrite the value of the same variable in the program data vector. Also, the WEIGHT variable is renamed in each data set and a new WEIGHT variable is calculated. The master data set and the transaction data set are listed before the code that performs the update:
+
+Master Data Set                          
+            HEALTH                      
+
+OBS    ID     NAME     TEAM    WEIGHT      
+
+ 1    1114    sally    blue      125       
+ 2    1441    sue      green     145       
+ 3    1750    joey     red       189       
+ 4    1994    mark     yellow    165
+ 5    2304    joe      red       170
+Transaction Data Set
+            FITNESS
+
+OBS   ID     NAME     TEAM    WEIGHT
+
+ 1   1114    sally    blue      119
+ 2   1994    mark     yellow    174
+ 3   2304    joe      red       170
+ 
+options nodate pageno=1 linesize=80 pagesize=60;
+
+   /* Sort both data sets by ID */
+proc sort data=health;
+   by id;
+run;
+proc sort data=fitness;
+   by id;
+run;
+
+   /* Update Master with Transaction */
+data health2;
+   length STATUS $11;
+   update health(rename=(weight=ORIG) in=a)
+          fitness(drop=name team in=b);
+   by id ;
+   if a and b then
+      do;
+         CHANGE=abs(orig - weight);
+         if weight<orig then status='loss';
+         else if weight>orig then status='gain';
+         else status='same';
+      end;
+   else status='no weigh in';
+run;
+
+options nodate ls=78;
+
+proc print data=health2;
+   title 'Weekly Weigh-in Report';
+run;
+                     Weekly Weigh-in Report             1
+
+  OBS STATUS        ID   NAME   TEAM    ORIG  WEIGHT  CHANGE
+
+   1  loss         1114  sally  blue     125    119      6  
+   2  no weigh in  1441  sue    green    145      .      .  
+   3  no weigh in  1750  joey   red      189      .      .  
+   4  gain         1994  mark   yellow   165    174      9  
+   5  same         2304  joe    red      170    170      0  
+
+
+Example 3: Updating with Missing Values
+This example illustrates the DATA steps used to create a master data set PAYROLL and a transaction data set INCREASE that contains regular and special missing values:
+
+options nodate pageno=1 linesize=80 pagesize=60;
+
+   /* Create the Master Data Set */
+data payroll;
+   input ID SALARY;
+   datalines;
+011 245
+026 269
+028 374
+034 333
+057 582
+;
+
+   /* Create the Transaction Data Set */
+data increase;
+   input ID SALARY;
+   missing A _;
+   datalines;
+011 376
+026 .
+028 374
+034 A
+057 _
+;
+
+   /* Update Master with Transaction */
+data newpay;
+   update payroll increase;
+   by id;
+run;
+proc print data=newpay;
+   title 'Updating with Missing Values';
+run;
+       Updating with Missing Values              1
+
+           OBS     ID     SALARY
+
+            1     1011      376 
+            2     1026      269    <=== value remains 269
+            3     1028      374 
+            4     1034        A    <=== special missing value
+            5     1057        .    <=== regular missing value
+See Also
+Statements:
+BY
+MERGE
+MISSING
+MODIFY
+SET
+System Option:
+MISSING=
+
+"Reading, Modifying, and Combining SAS Data Sets" in SAS Language Reference: Concepts
+Data Set Options
+
+Chapter Contents	
+Previous	
+Next	
+Top of Page
+Copyright 1999 by SAS Institute Inc., Cary, NC, USA. All rights reserved.
