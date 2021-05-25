@@ -1,0 +1,18 @@
+What are the IP ranges to block the entire Russian Federation? [closed]
+networking centos firewall iptables blocking
+Closed. This question is off-topic. It is not currently accepting answers.
+Want to improve this question? Update the question so it's on-topic for Super User.
+
+Closed 2 years ago.
+
+Every single morning the Russian Federation keeps attacking our sites. Every single day I block their IP address and every single day they use a new sub net. I tried:
+
+-A INPUT -s 4.53.0.0/16 -j DROP
+-A INPUT -s 173.205.0.0/16 -j DROP
+-A INPUT -s 37.9.0.0/16 -j DROP
+-A INPUT -s 213.180.0.0/16 -j DROP
+-A INPUT -s 5.255.0.0/16 -j DROP
+-A INPUT -s 141.8.0.0/16 -j DROP
+-A INPUT -s 87.250.0.0/16 -j DROP
+-A INPUT -s 178.154.0.0/16 -j DROP
+-A INPUT -s 5.45.0.0/16 -j DROP
