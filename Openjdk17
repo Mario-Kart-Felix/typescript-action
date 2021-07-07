@@ -1,0 +1,11 @@
+There is a build failure with OpenJDK 17 caused by javadoc errors:
+
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR :
+[INFO] -------------------------------------------------------------
+[ERROR] /<<PKGBUILDDIR>>/src/main/java/org/junit/runners/Parameterized.java:[125,3] error: heading used out of sequence: <H5>, compared to implicit preceding heading: <H2>
+[ERROR] /<<PKGBUILDDIR>>/src/main/java/org/junit/Test.java:[51,5] error: heading used out of sequence: <H5>, compared to implicit preceding heading: <H2>
+[ERROR] /<<PKGBUILDDIR>>/src/main/java/org/junit/ClassRule.java:[54,5] error: heading used out of sequence: <H5>, compared to implicit preceding heading: <H2>
+[ERROR] /<<PKGBUILDDIR>>/src/main/java/org/junit/rules/ExpectedException.java:[29,5] error: heading used out of sequence: <H5>, compared to implicit preceding heading: <H2>
+[ERROR] /<<PKGBUILDDIR>>/src/main/java/org/junit/Rule.java:[46,5] error: heading used out of sequence: <H5>, compared to implicit preceding heading: <H2>
+[INFO] 5 errors
